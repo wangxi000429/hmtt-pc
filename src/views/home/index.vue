@@ -5,7 +5,7 @@
       <div class="logo" :class="{smallLogo:!isOpen}"></div>
       <!-- 导航菜单 -->
       <el-menu
-        default-active="/"
+        :default-active="$route.path"
         background-color="#002033"
         text-color="#fff"
         active-text-color="#ffd04b"
@@ -51,15 +51,21 @@
         <!-- 文字 -->
         <span class="text">江苏传智播客科技教育有限公司</span>
         <!-- 下拉菜单组件 -->
-        <el-dropdown class="dropdown">
-          <span class="el-dropdown-link">
-            <img class="headIcon" src="../../assets/avatar.jpg" alt />
-            <span class="userName">用户名称</span>
+        <el-dropdown class="dropdown" @command = 'handleClick'>
+          <span class="el-dropdown-link" >
+            <!-- <img class="headIcon" src="../../assets/avatar.jpg" alt />
+            <span class="userName">用户名称</span> -->
+            <img :src="userInfo.photo" class="headIcon" alt="">
+            <span class="userName">{{userInfo.name}}</span>
             <i class="el-icon-arrow-down el-icon--right"></i>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item icon="el-icon-setting">个人设置</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-unlock">退出登录</el-dropdown-item>
+            <!-- <el-dropdown-item icon="el-icon-setting"
+            @click.native="setting">个人设置</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-unlock"
+            @click.native="logout">退出登录</el-dropdown-item> -->
+             <el-dropdown-item icon="el-icon-setting" command="setting">个人设置</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-unlock" command="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-header>
@@ -72,17 +78,38 @@
 </template>
 
 <script>
+import local from '@/utils/local.js'
+
 export default {
   data () {
     return {
-      isOpen: true
+      isOpen: true,
+      userInfo: {}
     }
   },
   methods: {
     toggleMenu () {
       // 切换左菜单 展开与收起
       this.isOpen = !this.isOpen
+    },
+    setting () {
+      this.$router.push('/setting')
+    },
+    logout () {
+      local.delUser()
+      this.$router.push('/login')
+    },
+    handleClick (command) {
+      // command 值  setting | logout
+      // this[command]() === this.setting()
+      // this[logout]() === this.logout()
+      this[command]()
     }
+  },
+  created () {
+    const user = local.getUser() || {}
+    this.userInfo.name = user.name
+    this.userInfo.photo = user.photo
   }
 }
 </script>
