@@ -12,13 +12,18 @@
           <el-radio-button :label="true">收藏</el-radio-button>
         </el-radio-group>
         <!-- 绿色按钮 -->
-        <el-button style="float:right" type="success" size="small" @click="dialogVisible=true">添加素材</el-button>
+        <el-button style="float:right" type="success" size="small" @click="open">添加素材</el-button>
         <!-- 对话框 -->
         <el-dialog title="添加素材" :visible.sync="dialogVisible" width="300px">
+          <!-- action 上传图片接口地址 -->
+          <!-- 携带token 放在请求头中 -->
           <el-upload
             class="avatar-uploader"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action="http://ttapi.research.itcast.cn/mp/v1_0/user/images"
+            :headers="headers"
+            name="image"
             :show-file-list="false"
+            :on-success="handleSuccess"
           >
             <img v-if="imageUrl" :src="imageUrl" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -52,6 +57,7 @@
 </template>
 
 <script>
+import local from '../../utils/local'
 export default {
   data () {
     return {
@@ -67,7 +73,11 @@ export default {
       // 对话框显示隐藏
       dialogVisible: false,
       // 上传成功后的图片地址
-      imageUrl: null
+      imageUrl: null,
+      // 上传的头
+      headers: {
+        Authorization: `Bearer ${local.getUser().token}`
+      }
     }
   },
   created () {
@@ -85,6 +95,7 @@ export default {
       this.reqParams.page = newPage
       this.getImages()
     },
+    // 获取素材列表数据
     toggleList () {
       this.reqParams.page = 1
       this.getImages()
@@ -115,6 +126,24 @@ export default {
         .catch(() => {
           // 点击了取消
         })
+    },
+    // 上传图片成功
+    handleSuccess (res) {
+      // res就是响应主体   获取图片地址 res.data.url
+      // 给imageUrl赋值
+      this.imageUrl = res.data.url
+      // 提示一下
+      this.$message.success('上传成功')
+      window.setTimeout(() => {
+        // 2s后关闭对话框  更新列表
+        this.dialogVisible = false
+        this.getImages()
+      }, 2000)
+    },
+    // 打开对话框
+    open () {
+      this.dialogVisible = true
+      this.imageUrl = null
     }
   }
 }
